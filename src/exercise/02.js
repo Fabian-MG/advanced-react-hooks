@@ -27,22 +27,39 @@ function pokemonInfoReducer(state, action) {
   }
 }
 
+const useSafeDispatch = (dispatch) => {
+  const mountedRef = React.useRef(false)
+
+  React.useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
+  return React.useCallback(
+    (...args) => (mountedRef.current ? dispatch(...args) : void 0),
+    [dispatch],
+  )
+}
+
 function useAsync(initialState) {
-  const [state, dispatch] = React.useReducer(pokemonInfoReducer, {
+  const [state, unsafeDispatch] = React.useReducer(pokemonInfoReducer, {
     data: null,
     status: 'idle',
     error: null,
     ...initialState
   })
+  const dispatch = useSafeDispatch(unsafeDispatch)
   const { data, status, error } = state
 
-  const run = React.useEffect((promise) => {    
+  const run = React.useCallback((promise) => {    
     dispatch({type: 'pending'})
     promise.then(
       (data) => dispatch({type: 'resolved', data}),
       (error) => dispatch({ype: 'rejected', error})
     )
-  }, [])
+  }, [dispatch])
 
   return { data, status, error, run }
 }
