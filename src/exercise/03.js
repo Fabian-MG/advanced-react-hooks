@@ -21,15 +21,23 @@ const CountProvider = ({children}) => {
   )
 }
 
+const useCount = () => {
+  const context = React.useContext(CounterContext)
+  if(!context) {
+    throw new Error('You cant access conter context without a provider')
+  }
+  return context
+}
+
 function CountDisplay() {
   // 🐨 get the count from useContext with the CountContext
-  const [count] = React.useContext(CounterContext)
+  const [count] = useCount()
   return <div>{`The current count is ${count}`}</div>
 }
 
 function Counter() {
   // 🐨 get the setCount from useContext with the CountContext
-  const [_, setCount] = React.useContext(CounterContext)
+  const [_, setCount] = useCount()
   const increment = () => setCount(c => c + 1)
   return <button onClick={increment}>Increment count</button>
 }
